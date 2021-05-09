@@ -9,14 +9,11 @@ import os
 from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
-from tkcalendar import *
+#from tkcalendar import * #need to install in your laptop
 
 root = Tk()
 root.geometry("700x500")
 root.title('ALFA TEAM')
-
-dpi = root.winfo_fpixels('1i')
-print(f"Current dpi is set to {dpi}")
 
 frame = Frame(root,)
 # Labels tags
@@ -72,17 +69,77 @@ def verify_login():
         if(passw in verify):
             messagebox.showinfo(
                 title="Successful", message="Login Successful")
-            #open_mainwindow()
+            open_mainwindow()
         else:
             messagebox.showerror(title="Error", message="Wrong Password")
     else:
         messagebox.showerror(title="Error", message="No user found")
         
+  # open new Window and destroy previous ONE.
+
+def CNA_window():
+    CNAwindow = Tk()
+    CNAwindow.geometry("500x300")
+    CNAwindow.title("Create New Account")
+    
+    
+    userLabel = Label(CNAwindow, text="Create Username: ")
+    userLabel.grid(
+       row=1, column=0,)
+    PasswordLabel1 = Label(CNAwindow, text="Create Password: ")
+    PasswordLabel1.grid(
+       row=2, column=0, )
+    PasswordLabel2 = Label(CNAwindow, text="Enter Password Again: ")
+    PasswordLabel2.grid(
+       row=3, column=0, )
+
+    userName = Entry(CNAwindow, width=40, bd=3)
+    userName.grid(
+       row=1, column=1, padx=15, pady=10)
+    Password1 = Entry(CNAwindow, width=35, show='*', bd=4)
+    Password1.grid(
+       row=2, column=1, padx=15, pady=10)
+    Password2 = Entry(CNAwindow, width=35, show='*', bd=4)
+    Password2.grid(
+       row=3, column=1, padx=15, pady=10)
+    
+    CreateButton = Button(CNAwindow, text="Create", command=CreateNewAcc)
+    
+    CreateButton.grid(row=4, column=1, padx=15, pady=10)
+           
+    
+def CreateNewAcc():
+    suffix = []
+    user = userName.get()
+    passw1 = Password1.get()
+
+    list_of_files = os.listdir()  
+    for i in list_of_files:
+        r_i = i.split('.')
+        suffix.append(r_i[0])
+          
+    if (Password1 == Password2):
+            user_file = open(str(userName+".txt"), "w+")
+            user_file.write(Password1)
+            user_file.close()  
+            messagebox.showinfo(
+                title="Successful", message="Account was created")
+    else:
+            messagebox.showerror(title="Error", message="Passwords do not match\n Try again")    
+    
+
+
+def show_frame(frame):
+    frame.tkraise()
+
+
+def open_mainwindow():
+    global clockBtn
+    root.destroy()
+        
     mainWindow = Tk()
     mainWindow.geometry("950x500")
-    mainWindow.title('welcom to our App ')
-    rootHeight = mainWindow.winfo_height()
-    rootWidth = mainWindow.winfo_width()
+    mainWindow.title('welcom to Alfa App ')
     my_menu = Menu(mainWindow)
     mainWindow.config(menu=my_menu)
 
@@ -104,6 +161,59 @@ def verify_login():
     Help_menu = Menu(my_menu)
     my_menu.add_cascade(label="File", menu=Help_menu)
     
+      # Frames
+    frame_add = Frame(mainWindow, width=280, height=480,
+                      )
+
+    frame_add.grid(row=0, column=0, padx=10, pady=10, sticky='nw')
+    frame_add.grid_propagate(False)
+    
+    frame_middle_1 = Frame(mainWindow, width=590, height=480,
+                           )
+    frame_middle_2 = Frame(mainWindow, width=590, height=480,
+                           )
+    frame_middle_3 = Frame(mainWindow, width=590, height=480,
+                           )
+
+    for frame in (frame_middle_1, frame_middle_2, frame_middle_3):
+        frame.grid(row=0, column=1, padx=10, pady=10, sticky='nw')
+        frame.grid_propagate(False)
+
+    show_frame(frame_middle_1)
+
+
+
+    # Buttons
+    logoutBtn = Button(frame_middle_1, text="Logout", bg="#4465f9",
+                       fg="white", height=1, width=15, font="Raleway", command=mainWindow.quit)
+    logoutBtn.grid(row=0, column=2, pady=20, padx=120)
+
+    transacBtn = Button(frame_middle_1, text="Add Transaction", bg="#4465f9",
+                        fg="white", height=1, width=15, font="Raleway", command=lambda: show_frame(frame_middle_2))
+    transacBtn.grid(row=1, column=2, pady=20, padx=120)
+
+    editBtn = Button(frame_middle_1, text="Edit account", bg="#4465f9",
+                     fg="white", height=1, width=15, font="Raleway")
+    editBtn.grid(row=2, column=2, pady=20, padx=120)
+
+    setupBtn = Button(frame_middle_1, text="Setup", bg="#4465f9",
+                      fg="white", height=1, width=15, font="Raleway")
+    setupBtn.grid(row=3, column=2, pady=20, padx=120)
+
+    summaryBtn = Button(frame_middle_1, text="Account Summary", bg="#4465f9",
+                        fg="white", height=1, width=15, font="Raleway")
+    summaryBtn.grid(row=4, column=2, pady=20, padx=120)
+    playBtn = Button(frame_middle_1, text="Play Lotto", bg="#4465f9",
+                     fg="white", height=1, width=15, font="Raleway")
+    playBtn.grid(row=5, column=2, pady=20, padx=120)
+
+    clockBtn = PhotoImage(file='images/clockv2.png')
+
+    getTimeBtn = Button(frame_add, image=clockBtn, border=0,
+                        command=time)
+
+    getTimeBtn.grid(row=0, column=0, pady=20, padx=5, sticky="ew")
+
      # Time Label
     global time_label
     time_label = Label(frame_add, text="Pick Time", font=("Arial", 10))
@@ -111,17 +221,21 @@ def verify_login():
 
     # Calender
 
-    #cal = Calendar(frame_add, selectmode="day", year=2021,
+   # cal = Calendar(frame_add, selectmode="day", year=2021,
                    #month=4, day=27, background="#4465f9",)
     cal.grid(row=2, column=0, pady=20, padx=20, )
     cal = calendar(winroot, font="Arial 8", 
-                   locale="fi_FI", disabledforeground="red",
-                   cursor="hand1")
+                  locale="fi_FI", disabledforeground="red",
+                 cursor="hand1")
 
 # Buttons
 loginBtn = Button(frame, text="login", bg="#4465f9",
                   fg="white", height=1, width=10, font="Raleway", command=verify_login)
 loginBtn.grid(row=3, column=1, pady=5)
+
+CNABtn = Button(frame, text="Create New Account", bg="#4465f9",
+                  fg="white", height=1, width=20, font="Raleway", command=CNA_window)
+CNABtn.grid(row=4, column=1, pady=10)
 
 
 frame.place(relx=0.5, rely=0.5, anchor=CENTER)
