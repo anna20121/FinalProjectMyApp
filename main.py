@@ -1,242 +1,309 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 28 12:18:30 2021
-
-@author: mohse
-"""
-
+import matplotlib.pyplot as plt
 import os
 from tkinter import *
 from tkinter import messagebox
+import tkinter as tk
 from tkinter import ttk
-from tkcalendar import * #need to install in your laptop
+try:
+    from tkcalendar import *
+except:  #if module was not installed
+    import  pip
+    pip.main(['install', 'tkcalendar'])
+    from tkcalendar import *
+from datetime import datetime
+import sqlite3
+import random
+import requests
+import calendar
+import pandas as pd
+from matplotlib.pyplot import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+import matplotlib
+matplotlib.use('TkAgg')  # choose backend
+import json
+import time
+import datetime
+from time import strftime
+  
 
-root = Tk()
-root.geometry("700x500")
-root.title('ALFA TEAM')
+class AlfaApp(tk.Tk):
+ 
+    def __init__(self, *args, **kwargs): 
+        tk.Tk.__init__(self, *args, **kwargs)
+        # creating a container
+        container = tk.Frame(self)  
+        container.pack(side = "top", fill = "both", expand = True) 
+        container.grid_rowconfigure(0, weight = 1)
+        container.grid_columnconfigure(0, weight = 1)
+      # initializing frames to an empty array
+        self.frames = {}  
+        # iterating through a tuple consisting
+        # of the different page layouts
+        for F in (Log_in_Page, MainWindow, CNA, Transactions_Page, Edit_Account, SetUp_Page, Summary_Page):
+            frame = F(container, self)
+            # initializing frame of that object from
+            # startpage, page1, page2... respectively with 
+            # for loop
+            self.frames[F] = frame 
+            frame.grid(row = 0, column = 0, sticky ="nsew")  
+        self.show_frame(Log_in_Page)  
+        self.title("Alfa App")
+        self.geometry("700x500")
+    # to display the current frame passed as
+    # parameter
+    def show_frame(self, cont):
+        frame = self.frames[cont]
+        frame.tkraise()
 
-frame = Frame(root,)
-# Labels tags
+# first window frame - Log In window
 
-sign = Label(frame, text="Login", font=('Arial Bold', 18))
-sign.grid(row=0, column=1, pady=(2, 20))
+class Log_in_Page(tk.Frame):
+    def __init__(self, parent, controller): 
+        tk.Frame.__init__(self, parent)
+         
+        sign = Label(self, text="Login", font=('Arial Bold', 18))
+        sign.grid(row=0, column=2, pady=(2, 20))
 
-userLabel = Label(frame, text="Username: ")
-userLabel.grid(
-    row=1, column=0,)
-PasswordLabel = Label(frame, text="Password: ")
-PasswordLabel.grid(
-    row=2, column=0, )
+        userLabel = Label(self, text="Username: ")
+        userLabel.grid(row=1, column=1)
+        PasswordLabel = Label(self, text="Password: ")
+        PasswordLabel.grid(row=2, column=1)
 
+        userName = Entry(self, width=40, bd=3)
+        userName.grid(row=1, column=2)
+        Password = Entry(self, width=35, show='*', bd=4)
+        Password.grid(row=2, column=2)
+ 
+        def verify_login():
+           suffix = []
+           user = userName.get()
+           passw = Password.get()
 
-# Entry to the App
-userName = Entry(frame, width=40, bd=3)
-userName.grid(
-    row=1, column=1, padx=15, pady=10)
-Password = Entry(frame, width=35, show='*', bd=4)
-Password.grid(
-    row=2, column=1, padx=15, pady=10)
+           userName.delete(0, END)
+           Password.delete(0, END)
 
+           list_of_files = os.listdir() 
+           for i in list_of_files:
+             r_i = i.split('.')
+             suffix.append(r_i[0])
 
-# functions needs to be here
+           if(user in suffix):
+              user_file = open(str(user+".txt"), "r")
+              verify = user_file.read().splitlines()
+              print(verify)
+              if(passw in verify):
+                  messagebox.showinfo(
+                     title="Successful", message="Login Successful")
+                  controller.show_frame(MainWindow)
+              else:
+                  messagebox.showerror(title="Error", message="Wrong Password")
+           else:
+              messagebox.showerror(title="Error", message="No user found")
+    
+        LogInButton = ttk.Button(self, text="login", command = verify_login)
+        # putting the button in its place by
+        # using grid
+        LogInButton.grid(row = 3, column = 2, padx = 10, pady = 10)         
+        ## button to show frame 2 with text layout2
+        CNAbutton = ttk.Button(self, text ="Create New Account",
+        command = lambda : controller.show_frame(CNA))
+        CNAbutton.grid(row = 4, column = 2, padx = 10, pady = 10)
+        #label for clock
+        label = Label(self, font=("Courier", 15, 'bold'), bg="navy", fg="white", bd =30)
+        label.grid(row =0, column=0, pady=10)
+        #clock function
+        def digitalclock():
+           text_input = time.strftime("%H:%M:%S")
+           label.config(text=text_input)
+           label.after(200, digitalclock)
+        digitalclock()
+        self.calendar()
+              
+    def calendar(self): #creating and placing calendar 
+        CalFrame = tk.Frame(self, width=300, height=250)
+        CalFrame.grid(row=2, column=0, padx=10)
+        cal = Calendar(CalFrame, selectmode="day",
+                       background="navy", foreground="white")
+        cal.place(width=300, height=250)                 
+  
+# second window frame MainWindow 
 
-
-def time():
-    # current date and time
-
-    now = datetime.now()
-    date_time = now.strftime("%I:%M:%S")
-    time_label.config(text=date_time)
-
-
-def verify_login():
-    suffix = []
-    user = userName.get()
-    passw = Password.get()
-
-    userName.delete(0, END)
-    Password.delete(0, END)
-
-    list_of_files = os.listdir()  
-    for i in list_of_files:
-        r_i = i.split('.')
-        suffix.append(r_i[0])
-
-    if(user in suffix):
-        user_file = open(str(user+".txt"), "r")
-        verify = user_file.read().splitlines()
-        print(verify)
-        if(passw in verify):
-            messagebox.showinfo(
-                title="Successful", message="Login Successful")
-            open_mainwindow()
-        else:
-            messagebox.showerror(title="Error", message="Wrong Password")
-    else:
-        messagebox.showerror(title="Error", message="No user found")
+class MainWindow(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
         
-  # open new Window and destroy previous ONE.
-
-def CNA_window():
-    CNAwindow = Tk()
-    CNAwindow.geometry("500x300")
-    CNAwindow.title("Create New Account")
-    
-    
-    userLabel = Label(CNAwindow, text="Create Username: ")
-    userLabel.grid(
-       row=1, column=0,)
-    PasswordLabel1 = Label(CNAwindow, text="Create Password: ")
-    PasswordLabel1.grid(
-       row=2, column=0, )
-    PasswordLabel2 = Label(CNAwindow, text="Enter Password Again: ")
-    PasswordLabel2.grid(
-       row=3, column=0, )
-
-    userName = Entry(CNAwindow, width=40, bd=3)
-    userName.grid(
-       row=1, column=1, padx=15, pady=10)
-    Password1 = Entry(CNAwindow, width=35, show='*', bd=4)
-    Password1.grid(
-       row=2, column=1, padx=15, pady=10)
-    Password2 = Entry(CNAwindow, width=35, show='*', bd=4)
-    Password2.grid(
-       row=3, column=1, padx=15, pady=10)
-    
-    CreateButton = Button(CNAwindow, text="Create", command=CreateNewAcc)
-    
-    CreateButton.grid(row=4, column=1, padx=15, pady=10)
-           
-    
-def CreateNewAcc():
-    suffix = []
-    user = userName.get()
-    passw1 = Password1.get()
-
-    list_of_files = os.listdir()  
-    for i in list_of_files:
-        r_i = i.split('.')
-        suffix.append(r_i[0])
-          
-    if (Password1 == Password2):
-            user_file = open(str(userName+".txt"), "w+")
-            user_file.write(Password1)
-            user_file.close()  
-            messagebox.showinfo(
-                title="Successful", message="Account was created")
-    else:
-            messagebox.showerror(title="Error", message="Passwords do not match\n Try again")    
-    
-
-
-def show_frame(frame):
-    frame.tkraise()
-
-
-def open_mainwindow():
-    global clockBtn
-    root.destroy()
+        # log out
+        LogOutB = ttk.Button(self,text="Log Out",
+                             command = lambda : controller.show_frame(Transactions))
+        LogOutB.grid(row = 1, column = 1, padx = 10, pady = 10)
+        # transactions
+        AddTrans = ttk.Button(self, text = "Add Transactions",
+                              command = lambda : controller.show_frame(Transactions_Page))
+        AddTrans.grid(row = 2, column =1, padx = 10, pady = 10)
+        # edit account
+        editB = ttk.Button(self, text = "Edit Account",
+                              command = lambda : controller.show_frame(Edit_Account))
+        editB.grid(row = 3, column = 1, padx = 10, pady = 10)
+        # set up
+        setB = ttk.Button(self, text = "Set up",
+                              command = lambda : controller.show_frame(SetUp_Page))
+        setB.grid(row = 4, column = 1, padx = 10, pady = 10)
+        # account summary
+        summB = ttk.Button(self, text = "Summary",
+                              command = lambda : controller.show_frame(Summary_Page))
+        summB.grid(row = 5, column = 1, padx = 10, pady = 10)
+        #play lotto
+        lottoB = ttk.Button(self, text = "Play Ltto")
+                            #command = lambda : )
+        lottoB.grid(row=6, column=1)
         
-    mainWindow = Tk()
-    mainWindow.geometry("950x500")
-    mainWindow.title('welcom to Alfa App ')
-    my_menu = Menu(mainWindow)
-    mainWindow.config(menu=my_menu)
+        
+        label = Label(self, font=("Courier", 15, 'bold'), bg="navy", fg="white", bd =30)
+        label.grid(row =0, column=0, pady=10)
+        #clock function
+        def digitalclock():
+           text_input = time.strftime("%H:%M:%S")
+           label.config(text=text_input)
+           label.after(200, digitalclock)
+        digitalclock()
+        self.calendar()
+              
+    def calendar(self): #creating and placing calendar 
+        CalFrame = tk.Frame(self, width=200, height=150)
+        CalFrame.grid(row=3, column=0, padx=10)
+        cal = Calendar(CalFrame, selectmode="day",
+                       background="navy", foreground="white")
+        cal.place(width=200, height=150)
+                    
+# third windo for Transactions page
 
-    # Menu
-    # Files
-    file_menu = Menu(my_menu)
-    my_menu.add_cascade(label="File", menu=file_menu)
-    file_menu.add_command(label="Save", command=mainWindow.quit)
-    file_menu.add_command(label="Exit", command=mainWindow.quit)
-    edit_menu = Menu(my_menu)
-    my_menu.add_cascade(label="Edit", menu=edit_menu)
+class Transactions_Page(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self, parent)
+        
+        conn = sqlite3.connect('Money.db')
+        c = conn.cursor()
+        
+        def add_transaction():
+            conn = sqlite3.connect('Money.db')
+            c = conn.cursor()
+            #c.execute("CREATE TABLE wallet(date TEXT, category TEXT, amount INT)")
+            #c.execute("CREATE TABLE Account(balance INT)", {'balance': 100000})
+            #c.execute("CREATE TABLE Income(date TEXT, category TEXT, amount INT)")
+            c.execute("INSERT INTO wallet VALUES (:date, :category, :amount)",
+                      {
+                        'date': time.strftime("%c"),
+                        'category': drop.get(),
+                        'amount': sumbox.get()
+                          })
+            conn.commit()
+            conn.close()
+            sumbox.delete(0, END)
+            drop.delete(0, END)
+            
+        def add_income():
+            conn = sqlite3.connect('Money.db')
+            c = conn.cursor()
+            c.execute("INSERT INTO income VALUES (:date, :category, :amount)",
+                      {
+                        'date': time.strftime("%c"),
+                        'category': drop2.get(),
+                        'amount': sumbox2.get()
+                          })
+            conn.commit()
+            conn.close()
+            sumbox2.delete(0, END)
+            drop2.delete(0, END)
+            
+        def query(): #just to check it's working
+            conn = sqlite3.connect('Money.db')
+            c = conn.cursor()
+            c.execute("SELECT *, oid FROM wallet")
+            records = c.fetchall()
+            print(records)
+            conn.commit()
+            conn.close()
+            
+            #Spendings
+        sp_label = Label(self, text="Spendings")
+        sp_label.grid(row=0, column=0)
+        cat_label = Label(self, text="Choose category: ")
+        cat_label.grid(row=1, column=0)        
+        sum_label = Label(self, text="Amount: ")
+        sum_label.grid(row=1, column=0)        
+        drop = ttk.Combobox(self, value=['...', 'Rent', 'Travel','Groceries', 'Subscription', 'Guilty Pleasures'])
+        drop.current(0)
+        drop.grid(row=1, column=1)       
+        sumbox = Entry(self, width=40, bd=3)
+        sumbox.grid(row=2, column=1)        
+        addB = ttk.Button(self, text = "add", command = add_transaction)
+        addB.grid(row=3, column=0)
+        query_btn = ttk.Button(self, text="show records", command = query)
+        query_btn.grid(row= 4, column=0)    
+            #Income
+        in_label = Label(self, text="Income")
+        in_label.grid(row=0, column=2)
+        cat_label2 = Label(self, text="Choose category: ")
+        cat_label2.grid(row=1, column=2)
+        sum_label2 = Label(self, text="Amount: ")
+        sum_label2.grid(row=2, column=2)
+        drop2 = ttk.Combobox(self, value=['...', 'Salary', 'Debts', 'Sudden income', 'Other'])
+        drop2.current(0)
+        drop2.grid(row=1, column=3)
+        sumbox2 = Entry(self, width=40, bd=3)
+        sumbox2.grid(row=2, column=3) 
+        addBin = ttk.Button(self, text = "add", command = add_income)
+        addBin.grid(row=3, column=2)
+        
+        conn.commit()
+        conn.close()
+                
+# fourth window for creating new account
 
-    option_menu = Menu(my_menu)
-    my_menu.add_cascade(label="Options", menu=option_menu)
+class CNA(tk.Frame): 
 
-    Tools_menu = Menu(my_menu)
-    my_menu.add_cascade(label="Tools", menu=Tools_menu)
+    def __init__(self, parent, controller):
 
-    Help_menu = Menu(my_menu)
-    my_menu.add_cascade(label="File", menu=Help_menu)
+        tk.Frame.__init__(self, parent)
+
+        label = ttk.Label(self, text ="Create New Account")
+
+        label.grid(row = 0, column = 4, padx = 10, pady = 10)
+        # button to show frame 2 with text
+        # layout2
+        button1 = ttk.Button(self, text ="Main Window",
+                            command = lambda : controller.show_frame(MainWindow))
+        # putting the button in its place by 
+        # using grid
+        button1.grid(row = 1, column = 1, padx = 10, pady = 10)
+        # button to show frame 3 with text
+        # layout3
+        button2 = ttk.Button(self, text ="Back to Log in page",
+                            command = lambda : controller.show_frame(Log_in_Page))    
+        # putting the button in its place by
+        # using grid
+        button2.grid(row = 2, column = 1, padx = 10, pady = 10)
+  
+# fifth frame for editing account
+  
+class Edit_Account(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self, parent)
+        RandomLabel = Label(self, text="idk")
+        RandomLabel.grid(row=0, column=0)
+
+# sixth for set up
+        
+class SetUp_Page(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self, parent)
+
+# seven, Summary
+        
+class Summary_Page(tk.Frame):
+    def __init__(self,parent,controller):
+        tk.Frame.__init__(self, parent)
     
-      # Frames
-    frame_add = Frame(mainWindow, width=280, height=480,
-                      )
 
-    frame_add.grid(row=0, column=0, padx=10, pady=10, sticky='nw')
-    frame_add.grid_propagate(False)
-    
-    frame_middle_1 = Frame(mainWindow, width=590, height=480,
-                           )
-    frame_middle_2 = Frame(mainWindow, width=590, height=480,
-                           )
-    frame_middle_3 = Frame(mainWindow, width=590, height=480,
-                           )
-
-    for frame in (frame_middle_1, frame_middle_2, frame_middle_3):
-        frame.grid(row=0, column=1, padx=10, pady=10, sticky='nw')
-        frame.grid_propagate(False)
-
-    show_frame(frame_middle_1)
-
-
-
-    # Buttons
-    logoutBtn = Button(frame_middle_1, text="Logout", bg="#4465f9",
-                       fg="white", height=1, width=15, font="Raleway", command=mainWindow.quit)
-    logoutBtn.grid(row=0, column=2, pady=20, padx=120)
-
-    transacBtn = Button(frame_middle_1, text="Add Transaction", bg="#4465f9",
-                        fg="white", height=1, width=15, font="Raleway", command=lambda: show_frame(frame_middle_2))
-    transacBtn.grid(row=1, column=2, pady=20, padx=120)
-
-    editBtn = Button(frame_middle_1, text="Edit account", bg="#4465f9",
-                     fg="white", height=1, width=15, font="Raleway")
-    editBtn.grid(row=2, column=2, pady=20, padx=120)
-
-    setupBtn = Button(frame_middle_1, text="Setup", bg="#4465f9",
-                      fg="white", height=1, width=15, font="Raleway")
-    setupBtn.grid(row=3, column=2, pady=20, padx=120)
-
-    summaryBtn = Button(frame_middle_1, text="Account Summary", bg="#4465f9",
-                        fg="white", height=1, width=15, font="Raleway")
-    summaryBtn.grid(row=4, column=2, pady=20, padx=120)
-    playBtn = Button(frame_middle_1, text="Play Lotto", bg="#4465f9",
-                     fg="white", height=1, width=15, font="Raleway")
-    playBtn.grid(row=5, column=2, pady=20, padx=120)
-
-    clockBtn = PhotoImage(file='images/clockv2.png')
-
-    getTimeBtn = Button(frame_add, image=clockBtn, border=0,
-                        command=time)
-
-    getTimeBtn.grid(row=0, column=0, pady=20, padx=5, sticky="ew")
-
-     # Time Label
-    global time_label
-    time_label = Label(frame_add, text="Pick Time", font=("Arial", 10))
-    time_label.grid(row=1, column=0, pady=5, padx=20,)
-
-    # Calender
-
-   # cal = Calendar(frame_add, selectmode="day", year=2021,
-                   #month=4, day=27, background="#4465f9",)
-    cal.grid(row=2, column=0, pady=20, padx=20, )
-    cal = calendar(winroot, font="Arial 8", 
-                  locale="fi_FI", disabledforeground="red",
-                 cursor="hand1")
-
-# Buttons
-loginBtn = Button(frame, text="login", bg="#4465f9",
-                  fg="white", height=1, width=10, font="Raleway", command=verify_login)
-loginBtn.grid(row=3, column=1, pady=5)
-
-CNABtn = Button(frame, text="Create New Account", bg="#4465f9",
-                  fg="white", height=1, width=20, font="Raleway", command=CNA_window)
-CNABtn.grid(row=4, column=1, pady=10)
-
-
-frame.place(relx=0.5, rely=0.5, anchor=CENTER)
-root.mainloop()
+app = AlfaApp()
+app.mainloop()
