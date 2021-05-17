@@ -12,8 +12,7 @@ import pandas as pd
 from matplotlib.pyplot import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib
-matplotlib.use('TkAgg')  # choose backend
-
+matplotlib.use('TkAgg')
 
 root = Tk()
 root.geometry("500x200")
@@ -36,7 +35,7 @@ userName.grid(
     row=1, column=1, padx=10, pady=5)
 Password = Entry(frame, width=35,)
 Password.grid(
-    row=2, column=1, padx=5, pady=10)
+    row=2, column=1,padx=5, pady=10)
 
 
 # functions needs to be here
