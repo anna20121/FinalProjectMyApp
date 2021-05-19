@@ -4,7 +4,7 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import ttk
 from datetime import datetime
-from tkcalendar import *  
+from tkcalendar import *  # installed
 import sqlite3
 import random
 import requests
@@ -12,7 +12,8 @@ import pandas as pd
 from matplotlib.pyplot import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib
-matplotlib.use('TkAgg')  
+matplotlib.use('TkAgg')  # choose backend
+
 
 root = Tk()
 root.geometry("500x200")
@@ -255,9 +256,10 @@ def open_mainwindow():
         frame.grid_propagate(False)
     show_frame(frame_middle_1)
     show_frame(frame_add)
-#----Frame middle weather file------------
+
+#----Open weather---------------------------------------------
     api = "https://api.openweathermap.org/data/2.5/weather?q=" + \
-        "Dhaka"+"&appid=e53f06c4d248fd8ab5e7c6ab0b8213ac"
+        "Valkeakoski"+"&appid=e53f06c4d248fd8ab5e7c6ab0b8213ac"
     json_data = requests.get(api).json()
     condition = json_data['weather'][0]['main']
     temp = int(json_data['main']['temp'] - 273.15)
@@ -298,6 +300,7 @@ def open_mainwindow():
     moneyBox.grid(row=3, column=1, pady=(0, 20), padx=5, sticky='w')
 
 #----Buttons-------------------
+
     logoutBtn = Button(frame_middle_1, text="Logout",height=1, width=15, font="Helvetica", command=mainWindow.quit)
     logoutBtn.grid(row=0, column=2, pady=5, padx=100)
 
@@ -333,8 +336,9 @@ def open_mainwindow():
     acceptBtn = Button(frame_middle_3, text="Accept Changes", height=1, width=15, font="Helvetica", command=update_savings)
     acceptBtn.grid(row=1, column=3, pady=(0, 20), padx=50)
     returnBtn = Button(frame_middle_3, text="Return", height=1, width=15, font="Helvetica", command=lambda: show_frame(frame_middle_1))
-    returnBtn.grid(row=2, column=3, pady=(0, 20), padx=50)
-#----has to be changed------------
+    returnBtn.grid(row=2, column=3, pady=(0, 20), padx=50)    
+
+#----Account Summary (table and save data)------------
     global savingEntry
     global targetLabelEntry
     global monthlyEntry
