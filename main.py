@@ -13,7 +13,7 @@ from matplotlib.pyplot import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 import matplotlib
 matplotlib.use('TkAgg')  
-#
+
 root = Tk()
 root.geometry("500x200")
 root.title('ALfa team App')
