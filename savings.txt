@@ -1,0 +1,3 @@
+saving 550
+target 30
+monthly 120
